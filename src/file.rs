@@ -14,9 +14,13 @@ pub type ConfigurationFile = Encoder;
 
 pub trait ConfigurationFileExtension {
     ///
-    /// This method will initialize the configuration file with some basic content.
+    /// This method initializes the configuration file with some basic content.
     ///
     fn init() -> Self;
+
+    ///
+    /// This method saves, into a file (given by it path), the content of the object.
+    ///
     fn save(&self, path: &Path) -> Result<(), Error>;
 }
 
@@ -37,6 +41,9 @@ impl<'a> ConfigurationFileExtension for ConfigurationFile {
         encoder
     }
 
+    ///
+    /// This method returns a Result type.
+    ///
     fn save(&self, path: &Path) -> Result<(), Error> {
         let content_string = encode_str(&Value::Table(self.toml.clone()));
         let mut configuration_file = File::create(path)
@@ -50,7 +57,7 @@ impl<'a> ConfigurationFileExtension for ConfigurationFile {
 /// Extension of the Toml crate
 pub trait TomlExtension {
     ///
-    /// This method will load a file, get the content and parse it.
+    /// This method loads a file, get the content and parse it.
     ///
     fn parse_from_file(path: &Path) -> Option<Table>;
 }
