@@ -1,0 +1,8 @@
+[package]
+name = "gpm"
+version = "0.1.0"
+authors = ["k0pernicus <antonin.carette@gmail.com>"]
+
+[dependencies]
+    git2 = "0.6"
+    walkdir = "1"
