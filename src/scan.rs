@@ -39,18 +39,26 @@ impl HiddenPath for Path {
     }
 }
 
-///
-/// Fonction to know if a directory path is a git repository.
-///
-/// Is a git repository if the path indicates a directory, and this directory is a git subdirectory.
-///
-pub fn scan_single_directory(directory: &DirEntry) -> bool {
-    if fs::metadata(directory.path()).unwrap().is_dir() {
-        // If the DirEntry is a directory, it returns if the DirEntry metadata is equals to GIT_DIR_NAME
-        return directory.file_name().to_str().unwrap() == GIT_DIR_NAME;
+trait GitTools {
+    ///
+    /// Method to know if a given entry is a git repository
+    ///
+    fn is_git_repository(&self) -> bool;
+}
+
+impl GitTools for DirEntry {
+    ///
+    /// This method returns a boolean - true if the DirEntry reference is a git repository, else
+    /// false
+    ///
+    fn is_git_repository(&self) -> bool {
+        if fs::metadata(self.path()).unwrap().is_dir() {
+            // If the DirEntry is a directory, it returns if the DirEntry metadata is equals to GIT_DIR_NAME
+            return self.file_name().to_str().unwrap() == GIT_DIR_NAME;
+        }
+        // If the DirEntry is not a directory, return false
+        return false;
     }
-    // If the DirEntry is not a directory, return false
-    return false;
 }
 
 ///
@@ -59,10 +67,10 @@ pub fn scan_single_directory(directory: &DirEntry) -> bool {
 /// This function update a mutable vector of String, which represents each path for each git
 /// path for a given git repository.
 ///
-pub fn scan_repositories(git_path: &mut Vec<String>, directory: &PathBuf) {
+pub fn find_git_repositories(git_path: &mut Vec<String>, directory: &PathBuf) {
     // Get all entries from the PathBuf given as parameter, filter and follow links
     for entry in WalkDir::new(directory).follow_links(true).into_iter().filter_map(|e| e.ok()) {
-        if scan_single_directory(&entry) {
+        if entry.is_git_repository() {
             // Get the parent node
             let entry_p = entry.path().parent().unwrap().clone();
             // Puth the parent path name in the list of git repositories found
