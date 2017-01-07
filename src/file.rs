@@ -1,6 +1,5 @@
 use std::fs::File;
-use std::io::Error;
-use std::io::prelude::*;
+use std::io::{Error, Read, Write};
 use std::path::Path;
 use toml::{encode_str, Encoder, Parser, Table, Value};
 
