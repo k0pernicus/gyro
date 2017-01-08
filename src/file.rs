@@ -1,16 +1,12 @@
 use std::fs::File;
 use std::io::{Error, Read, Write};
 use std::path::Path;
-use toml::{encode_str, Encoder, Parser, Table, Value};
+use toml::{encode_str, Parser, Value};
+
+use types::ConfigurationContent;
+use types::ConfigurationFile;
 
 static CONFIGURATION_FILE_NAME: &'static str = ".gpm";
-
-/// The type of the content file is a Table type.
-pub type ConfigurationContent = Table;
-
-/// The configuration file is basically a TOML file that contain some informations about local git
-/// projects.
-pub type ConfigurationFile = Encoder;
 
 pub trait ConfigurationFileExtension {
     ///
@@ -59,14 +55,14 @@ pub trait TomlExtension {
     ///
     /// This method loads a file, get the content and parse it.
     ///
-    fn parse_from_file(path: &Path) -> Option<Table>;
+    fn parse_from_file(path: &Path) -> Option<ConfigurationContent>;
 }
 
 impl<'a> TomlExtension for Parser<'a> {
     ///
-    /// This method returns an Option type that contains a toml::Table type.
+    /// This method returns an Option type that contains the configuration file content.
     ///
-    fn parse_from_file(path: &Path) -> Option<Table> {
+    fn parse_from_file(path: &Path) -> Option<ConfigurationContent> {
         let mut configuration_file = File::open(path);
         // Return None if the path is not ok
         if configuration_file.is_err() {
