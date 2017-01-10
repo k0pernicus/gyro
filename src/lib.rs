@@ -1,7 +1,9 @@
+extern crate chrono;
 extern crate rustc_serialize;
 extern crate toml;
 extern crate walkdir;
 
+pub mod configuration;
 pub mod file;
 pub mod scan;
 
@@ -13,4 +15,3 @@ pub type ConfigurationContent = Table;
 /// The configuration file is basically a TOML file that contain some informations about local git
 /// projects.
 pub type ConfigurationFile = Encoder;
-

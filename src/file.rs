@@ -6,6 +6,7 @@ use toml::{encode_str, Parser, Value};
 use {ConfigurationContent, ConfigurationFile};
 
 static CONFIGURATION_FILE_NAME: &'static str = ".gpm";
+static CONFIGURATION_FILE_NAME_BUP: &'static str = ".gpm.new";
 
 pub trait ConfigurationFileExtension {
     ///
