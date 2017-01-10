@@ -1,3 +1,10 @@
+extern crate rustc_serialize;
+extern crate toml;
+extern crate walkdir;
+
+pub mod file;
+pub mod scan;
+
 use toml::{Encoder, Table};
 
 /// The type of the content file is a Table type.

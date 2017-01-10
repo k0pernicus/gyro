@@ -3,6 +3,14 @@ name = "gpm"
 version = "0.1.0"
 authors = ["k0pernicus <antonin.carette@gmail.com>"]
 
+[lib]
+name = "libgpm"
+path = "src/lib.rs"
+
+[[bin]]
+name = "gpm"
+path = "src/main.rs"
+
 [dependencies]
     git2 = "0.6"
 		rustc-serialize = "0.3.22"

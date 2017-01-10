@@ -3,8 +3,7 @@ use std::io::{Error, Read, Write};
 use std::path::Path;
 use toml::{encode_str, Parser, Value};
 
-use types::ConfigurationContent;
-use types::ConfigurationFile;
+use {ConfigurationContent, ConfigurationFile};
 
 static CONFIGURATION_FILE_NAME: &'static str = ".gpm";
 
