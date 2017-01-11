@@ -17,6 +17,12 @@ pub struct Entry {
 
 type Result<T> = result::Result<T, ConfigureContentError>;
 
+pub enum EntryCategory {
+    Body,
+    Watched,
+    Ignored
+}
+
 #[derive(Debug)]
 pub enum ConfigureContentError {
     BadPosition(String),
@@ -36,18 +42,14 @@ impl fmt::Display for ConfigureContentError {
     }
 }
 
-
 pub trait ConfigureContent {
-    fn add_watch_entry(&mut self, key: &str, value: &Entry) -> Result<()>;
-    fn add_ignored_entry(&self, key: &str, value: &Entry) -> Result<()>;
-    fn remove_watch_entry(&self, key: &str) -> Result<()>;
-    fn remove_ignored_entry(&self, key: &str) -> Result<()>;
-    fn watch_to_ignored_entry(&self, key: &str) -> Result<()>;
-    fn ignored_to_watch_entry(&self, key: &str) -> Result<()>;
+    fn add_entry(&mut self, key: &str, value: &Entry, category: &EntryCategory) -> Result<()>;
+    fn remove_entry(&self, key: &str, category: &EntryCategory) -> Result<()>;
+    fn transfer_entry(&self, key: &str, category: &EntryCategory) -> Result<()>;
 }
 
 impl ConfigureContent for ConfigurationContent {
-    fn add_watch_entry(&mut self, key: &str, value: &Entry) -> Result<()> {
+    fn add_entry(&mut self, key: &str, value: &Entry, category: &EntryCategory) -> Result<()> {
         if self.contains_key(key) {
             return Err(ConfigureContentError::KeyAlreadyExists(String::from(key)));
         }
@@ -61,23 +63,11 @@ impl ConfigureContent for ConfigurationContent {
         }
     }
 
-    fn add_ignored_entry(&self, key: &str, value: &Entry) -> Result<()> {
+    fn remove_entry(&self, key: &str, category: &EntryCategory) -> Result<()> {
         unimplemented!()
     }
 
-    fn remove_watch_entry(&self, key: &str) -> Result<()> {
-        unimplemented!()
-    }
-
-    fn remove_ignored_entry(&self, key: &str) -> Result<()> {
-        unimplemented!()
-    }
-
-    fn watch_to_ignored_entry(&self, key: &str) -> Result<()> {
-        unimplemented!()
-    }
-
-    fn ignored_to_watch_entry(&self, key: &str) -> Result<()> {
+    fn transfer_entry(&self, key: &str, category: &EntryCategory) -> Result<()> {
         unimplemented!()
     }
 
