@@ -1,12 +1,7 @@
+use GIT_DIR_NAME;
 use std::fs;
 use std::path::{Path, PathBuf};
-
 use walkdir::{DirEntry, WalkDir};
-
-///
-/// Static variable to get the name of the git main directory
-///
-static GIT_DIR_NAME: &'static str = ".git";
 
 trait HiddenPath {
     ///

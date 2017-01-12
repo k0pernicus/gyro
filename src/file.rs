@@ -3,10 +3,7 @@ use std::io::{Error, Read, Write};
 use std::path::Path;
 use toml::{encode_str, Parser, Value};
 
-use {ConfigurationContent, ConfigurationFile};
-
-static CONFIGURATION_FILE_NAME: &'static str = ".gpm";
-static CONFIGURATION_FILE_NAME_BUP: &'static str = ".gpm.new";
+use {ConfigurationContent, ConfigurationFile, WATCHED_ENTRY_NAME, IGNORED_ENTRY_NAME, GROUPS_ENTRY_NAME};
 
 pub trait ConfigurationFileExtension {
     ///
@@ -26,14 +23,14 @@ impl<'a> ConfigurationFileExtension for ConfigurationFile {
     ///
     fn init() -> Self {
         let mut encoder = ConfigurationFile::new();
-        let toml_content = r#"
-            [watch]
+        let toml_content = format!(r#"
+            [{}]
             
-            [ignored]
+            [{}]
 
-            [groups]
-            "#;
-        encoder.toml = Parser::new(toml_content).parse().unwrap();
+            [{}]
+            "#, WATCHED_ENTRY_NAME, IGNORED_ENTRY_NAME, GROUPS_ENTRY_NAME);
+        encoder.toml = Parser::new(&toml_content).parse().unwrap();
         encoder
     }
 

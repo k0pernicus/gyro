@@ -1,4 +1,4 @@
-use {ConfigurationContent, ConfigurationFile};
+use {ConfigurationContent, ConfigurationFile, IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
 use chrono::DateTime;
 use chrono::offset::utc::UTC;
 use rustc_serialize::Encodable;
@@ -38,6 +38,7 @@ pub enum EntryCategory {
 pub enum ConfigureContentError {
     BadPosition(String),
     EncodingError(String),
+    InternalError(String),
     KeyAlreadyExists(String),
     UnknownKey(String),
 }
@@ -47,6 +48,7 @@ impl fmt::Display for ConfigureContentError {
         match *self {
             ConfigureContentError::BadPosition(ref e) => e.fmt(f),
             ConfigureContentError::EncodingError(ref e) => e.fmt(f),
+            ConfigureContentError::InternalError(ref e) => e.fmt(f),
             ConfigureContentError::KeyAlreadyExists(ref e) => e.fmt(f),
             ConfigureContentError::UnknownKey(ref e) => e.fmt(f),
         }
@@ -55,30 +57,46 @@ impl fmt::Display for ConfigureContentError {
 
 pub trait ConfigureContent {
     fn add_entry(&mut self, key: &str, value: &Entry, category: &EntryCategory) -> Result<()>;
-    fn remove_entry(&self, key: &str, category: &EntryCategory) -> Result<()>;
-    fn transfer_entry(&self, key: &str, category: &EntryCategory) -> Result<()>;
+    fn remove_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()>;
+    fn transfer_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()>;
 }
 
 impl ConfigureContent for ConfigurationContent {
     fn add_entry(&mut self, key: &str, value: &Entry, category: &EntryCategory) -> Result<()> {
-        if self.contains_key(key) {
-            return Err(ConfigureContentError::KeyAlreadyExists(String::from(key)));
+        let entry_path_name: String= match category {
+            &EntryCategory::Body => String::from(key),
+            &EntryCategory::Watched => format!("{}.{}", WATCHED_ENTRY_NAME, key),
+            &EntryCategory::Ignored => format!("{}.{}", IGNORED_ENTRY_NAME, key),
+        };
+        if self.contains_key(&entry_path_name) {
+            return Err(ConfigureContentError::KeyAlreadyExists(entry_path_name));
         }
         let mut encoder = ConfigurationFile::new();
         match value.encode(&mut encoder) {
             Ok(_) => {
-                self.insert(String::from(key), Value::Table(encoder.toml));
+                self.insert(entry_path_name, Value::Table(encoder.toml));
                 Ok(())
             },
             Err(error) => Err(ConfigureContentError::EncodingError(String::from(error.description()))),
         }
     }
 
-    fn remove_entry(&self, key: &str, category: &EntryCategory) -> Result<()> {
-        unimplemented!()
+    fn remove_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()> {
+         let entry_path_name: String= match category {
+            &EntryCategory::Body => String::from(key),
+            &EntryCategory::Watched => format!("{}.{}", WATCHED_ENTRY_NAME, key),
+            &EntryCategory::Ignored => format!("{}.{}", IGNORED_ENTRY_NAME, key),
+        };
+        if !self.contains_key(&entry_path_name) {
+            return Err(ConfigureContentError::UnknownKey(entry_path_name));
+        }
+        match self.remove(&entry_path_name) {
+            Some(_) => Ok(()),
+            None => Err(ConfigureContentError::InternalError(format!("Canno't remove the key {} from the data structure", entry_path_name))),
+        }
     }
 
-    fn transfer_entry(&self, key: &str, category: &EntryCategory) -> Result<()> {
+    fn transfer_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()> {
         unimplemented!()
     }
 
