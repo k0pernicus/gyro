@@ -11,8 +11,19 @@ use toml::Value;
 pub struct Entry {
     pub name: String,
     pub path: String,
-    pub created: DateTime<UTC>,
-    pub updated: DateTime<UTC>,
+    pub created: String,
+    pub updated: String,
+}
+
+impl Entry {
+    pub fn new(name: &str, path: &str) -> Self {
+        Entry {
+            name: String::from(name),
+            path: String::from(path),
+            created: UTC::now().to_rfc2822(),
+            updated: UTC::now().to_rfc2822(),
+        }
+    }
 }
 
 type Result<T> = result::Result<T, ConfigureContentError>;
