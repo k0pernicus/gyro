@@ -60,7 +60,7 @@ impl<'a> TomlExtension for Parser<'a> {
     /// This method returns an Option type that contains the configuration file content.
     ///
     fn parse_from_file(path: &Path) -> Option<ConfigurationContent> {
-        let mut configuration_file = File::open(path);
+        let configuration_file = File::open(path);
         // Return None if the path is not ok
         if configuration_file.is_err() {
             return None;

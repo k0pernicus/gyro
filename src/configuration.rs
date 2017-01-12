@@ -1,5 +1,4 @@
 use {ConfigurationContent, ConfigurationFile, IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
-use chrono::DateTime;
 use chrono::offset::utc::UTC;
 use rustc_serialize::Encodable;
 use std::error::Error;
@@ -29,7 +28,6 @@ impl Entry {
 type Result<T> = result::Result<T, ConfigureContentError>;
 
 pub enum EntryCategory {
-    Body,
     Watched,
     Ignored
 }
@@ -58,13 +56,12 @@ impl fmt::Display for ConfigureContentError {
 pub trait ConfigureContent {
     fn add_entry(&mut self, key: &str, value: &Entry, category: &EntryCategory) -> Result<()>;
     fn remove_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()>;
-    fn transfer_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()>;
+    fn transfer_entry(&mut self, key: &str, old_category: &EntryCategory, new_category: &EntryCategory) -> Result<()>;
 }
 
 impl ConfigureContent for ConfigurationContent {
     fn add_entry(&mut self, key: &str, value: &Entry, category: &EntryCategory) -> Result<()> {
-        let entry_path_name: String= match category {
-            &EntryCategory::Body => String::from(key),
+        let entry_path_name: String = match category {
             &EntryCategory::Watched => format!("{}.{}", WATCHED_ENTRY_NAME, key),
             &EntryCategory::Ignored => format!("{}.{}", IGNORED_ENTRY_NAME, key),
         };
@@ -82,8 +79,7 @@ impl ConfigureContent for ConfigurationContent {
     }
 
     fn remove_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()> {
-         let entry_path_name: String= match category {
-            &EntryCategory::Body => String::from(key),
+         let entry_path_name: String = match category {
             &EntryCategory::Watched => format!("{}.{}", WATCHED_ENTRY_NAME, key),
             &EntryCategory::Ignored => format!("{}.{}", IGNORED_ENTRY_NAME, key),
         };
@@ -96,8 +92,8 @@ impl ConfigureContent for ConfigurationContent {
         }
     }
 
-    fn transfer_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()> {
-        unimplemented!()
+    fn transfer_entry(&mut self, key: &str, old_category: &EntryCategory, new_category: &EntryCategory) -> Result<()> {
+        unimplemented!();
     }
 
 }
