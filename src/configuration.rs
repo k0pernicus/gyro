@@ -54,17 +54,22 @@ impl fmt::Display for ConfigureContentError {
 }
 
 pub trait ConfigureContent {
+    fn get_entry_path(&self, key: &str, category: &EntryCategory) -> String;
     fn add_entry(&mut self, key: &str, value: &Entry, category: &EntryCategory) -> Result<()>;
     fn remove_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()>;
     fn transfer_entry(&mut self, key: &str, old_category: &EntryCategory, new_category: &EntryCategory) -> Result<()>;
 }
 
 impl ConfigureContent for ConfigurationContent {
-    fn add_entry(&mut self, key: &str, value: &Entry, category: &EntryCategory) -> Result<()> {
-        let entry_path_name: String = match category {
+    fn get_entry_path(&self, key: &str, category: &EntryCategory) -> String {
+        match category {
             &EntryCategory::Watched => format!("{}.{}", WATCHED_ENTRY_NAME, key),
             &EntryCategory::Ignored => format!("{}.{}", IGNORED_ENTRY_NAME, key),
-        };
+        }
+    }
+
+    fn add_entry(&mut self, key: &str, value: &Entry, category: &EntryCategory) -> Result<()> {
+        let entry_path_name = self.get_entry_path(key, category); 
         if self.contains_key(&entry_path_name) {
             return Err(ConfigureContentError::KeyAlreadyExists(entry_path_name));
         }
@@ -79,16 +84,13 @@ impl ConfigureContent for ConfigurationContent {
     }
 
     fn remove_entry(&mut self, key: &str, category: &EntryCategory) -> Result<()> {
-         let entry_path_name: String = match category {
-            &EntryCategory::Watched => format!("{}.{}", WATCHED_ENTRY_NAME, key),
-            &EntryCategory::Ignored => format!("{}.{}", IGNORED_ENTRY_NAME, key),
-        };
+        let entry_path_name = self.get_entry_path(key, category);
         if !self.contains_key(&entry_path_name) {
             return Err(ConfigureContentError::UnknownKey(entry_path_name));
         }
         match self.remove(&entry_path_name) {
             Some(_) => Ok(()),
-            None => Err(ConfigureContentError::InternalError(format!("Canno't remove the key {} from the data structure", entry_path_name))),
+            None => Err(ConfigureContentError::InternalError(format!("Can not remove the key '{}' from the data structure", entry_path_name))),
         }
     }
 
