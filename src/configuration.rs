@@ -64,7 +64,8 @@ pub enum EntryCategory {
 ///
 /// Enum that contain possible error flags for ConfigureContent:
 /// `BadPosition` is corresponding to an error when transfering an entry between two categories
-/// `EncodingError` is corresponding to an error when encoding a Rust structure to a Toml value
+/// `DecodingError` is corresponding to an error when decoding a Toml value to a Rust data structure
+/// `EncodingError` is corresponding to an error when encoding a Rust data structure to a Toml value
 /// `InternalError` is corresponding to internal errors for Rust data structures (like insertion)
 /// `KeyAlreadyExists` is corresponding to an error when inserting a key that already exists
 /// `UnknownKey` is corresponding to an error when deleting a key that does not exists
