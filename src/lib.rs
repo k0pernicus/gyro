@@ -1,3 +1,4 @@
+extern crate ansi_term;
 extern crate chrono;
 extern crate git2;
 extern crate rustc_serialize;

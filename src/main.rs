@@ -6,6 +6,7 @@ extern crate toml;
 use libgpm::ConfigurationFile;
 use libgpm::configuration::{ConfigureContent, Entry, EntryCategory};
 use libgpm::file::{TomlExtension, ConfigurationFileExtension};
+use libgpm::git::Repo;
 use libgpm::scan::{find_git_repositories, filter_hidden_repositories};
 use rustc_serialize::Encodable;
 use std::path::{Path, PathBuf};
@@ -15,11 +16,11 @@ fn main() {
     let path: PathBuf = PathBuf::from("/home/antonin/");
     find_git_repositories(&mut directories, &path);
     for repo in filter_hidden_repositories(&directories) {
-        println!("{}", repo);
+        println!("{}", Repo(git2::Repository::open(repo).unwrap()));
     }
     let mut toml_table = toml::Parser::parse_from_file(Path::new("/home/antonin/.gpm")).unwrap();
     println!("PROCESSING...");
-    match toml_table.remove_entry("Test", &EntryCategory::Watched) {
+    match toml_table.transfer_entry("Test", &EntryCategory::Watched, &EntryCategory::Ignored) {
         Ok(_) => println!("{:?}", toml_table),
         Err(error) => println!("{:?}", error),
     }

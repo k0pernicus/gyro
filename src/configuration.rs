@@ -1,4 +1,5 @@
-use {ConfigurationContent, ConfigurationFile, GROUPS_ENTRY_NAME, IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
+use {ConfigurationContent, ConfigurationFile, GROUPS_ENTRY_NAME, IGNORED_ENTRY_NAME,
+     WATCHED_ENTRY_NAME};
 use chrono::offset::utc::UTC;
 use rustc_serialize::{Decodable, Encodable};
 use std::cmp::PartialEq;
@@ -101,22 +102,30 @@ pub trait ConfigureContent {
     /// Method to get the entry path, from a key and a category
     ///
     fn get_entry_path(&self, key: &str, category: &EntryCategory) -> String;
-    
+
     ///
     /// Method to add a single entry value, represented by a string key, in a given category
     ///
-    fn add_entry(&mut self, key: &str, entry_value: &mut Entry, category: &EntryCategory) -> Result<()>;
-    
+    fn add_entry(&mut self,
+                 key: &str,
+                 entry_value: &mut Entry,
+                 category: &EntryCategory)
+                 -> Result<()>;
+
     ///
     /// Method to remove a given string key, in a category
     ///
     fn remove_entry(&mut self, key: &str, category: &EntryCategory) -> Result<Value>;
-    
+
     ///
     /// Method to transfer a given entry (represented by a string key), from an old category to a
     /// new one
     ///
-    fn transfer_entry(&mut self, key: &str, old_category: &EntryCategory, new_category: &EntryCategory) -> Result<()>;
+    fn transfer_entry(&mut self,
+                      key: &str,
+                      old_category: &EntryCategory,
+                      new_category: &EntryCategory)
+                      -> Result<()>;
 }
 
 impl ConfigureContent for ConfigurationContent {
@@ -135,8 +144,12 @@ impl ConfigureContent for ConfigurationContent {
     /// This method returns a Result type, that represents if the entry has been successfully added
     /// to the given entry, or an error
     ///
-    fn add_entry(&mut self, key: &str, entry_value: &mut Entry, category: &EntryCategory) -> Result<()> {
-        let entry_path_name = self.get_entry_path(key, category); 
+    fn add_entry(&mut self,
+                 key: &str,
+                 entry_value: &mut Entry,
+                 category: &EntryCategory)
+                 -> Result<()> {
+        let entry_path_name = self.get_entry_path(key, category);
         if self.contains_key(&entry_path_name) {
             return Err(ConfigureContentError::KeyAlreadyExists(entry_path_name));
         }
@@ -146,8 +159,10 @@ impl ConfigureContent for ConfigurationContent {
             Ok(_) => {
                 self.insert(entry_path_name, Value::Table(encoder.toml));
                 Ok(())
-            },
-            Err(error) => Err(ConfigureContentError::EncodingError(String::from(error.description()))),
+            }
+            Err(error) => {
+                Err(ConfigureContentError::EncodingError(String::from(error.description())))
+            }
         }
     }
 
@@ -161,7 +176,11 @@ impl ConfigureContent for ConfigurationContent {
         }
         match self.remove(&entry_path_name) {
             Some(value) => Ok(value),
-            None => Err(ConfigureContentError::InternalError(format!("Can not remove the key '{}' from the data structure", entry_path_name))),
+            None => {
+                Err(ConfigureContentError::InternalError(format!("Can not remove the key '{}' \
+                                                                  from the data structure",
+                                                                 entry_path_name)))
+            }
         }
     }
 
@@ -169,15 +188,24 @@ impl ConfigureContent for ConfigurationContent {
     /// This method returns a Result type, that represents if the entry has been successfully
     /// transfered, or an error
     ///
-    fn transfer_entry(&mut self, key: &str, old_category: &EntryCategory, new_category: &EntryCategory) -> Result<()> {
+    fn transfer_entry(&mut self,
+                      key: &str,
+                      old_category: &EntryCategory,
+                      new_category: &EntryCategory)
+                      -> Result<()> {
         if old_category == new_category {
-            return Err(ConfigureContentError::InternalError(format!("Entry categories are equals")))
+            return Err(ConfigureContentError::InternalError(format!("Entry categories are \
+                                                                     equals")));
         }
         let entry_value: Value = self.remove_entry(key, old_category).unwrap();
         match toml::decode::<Entry>(entry_value) {
             Some(ref mut entry) => self.add_entry(key, entry, new_category),
-            None => Err(ConfigureContentError::DecodingError(format!("Can not decode the current value from '{:?}' to '{:?}'", old_category, new_category))),
+            None => {
+                Err(ConfigureContentError::DecodingError(format!("Can not decode the current \
+                                                                  value from '{:?}' to '{:?}'",
+                                                                 old_category,
+                                                                 new_category)))
+            }
         }
     }
-
 }
