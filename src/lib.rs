@@ -1,10 +1,12 @@
 extern crate chrono;
+extern crate git2;
 extern crate rustc_serialize;
 extern crate toml;
 extern crate walkdir;
 
 pub mod configuration;
 pub mod file;
+pub mod git;
 pub mod scan;
 
 use toml::{Encoder, Table};
