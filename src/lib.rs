@@ -30,17 +30,17 @@ static CONFIGURATION_FILE_NAME_BUP: &'static str = ".gpm.new";
 ///
 /// Static variable to get the entry name of watched git repositories
 ///
-static WATCHED_ENTRY_NAME: &'static str = "watched";
+pub static WATCHED_ENTRY_NAME: &'static str = "watched";
 
 ///
 /// Static variable to get the entry name of ignored git repositories
 ///
-static IGNORED_ENTRY_NAME: &'static str = "ignored";
+pub static IGNORED_ENTRY_NAME: &'static str = "ignored";
 
 ///
 /// Static variable to get the entry name of git repo groups
 ///
-static GROUPS_ENTRY_NAME: &'static str = "groups";
+pub static GROUPS_ENTRY_NAME: &'static str = "groups";
 
 /// The type of the content file is a Table type.
 pub type ConfigurationContent = Table;
