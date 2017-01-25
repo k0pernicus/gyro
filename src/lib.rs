@@ -15,12 +15,12 @@ use toml::{Encoder, Table};
 ///
 /// Static variable to get the name of the git main directory
 ///
-static GIT_DIR_NAME: &'static str = ".git";
+pub static GIT_DIR_NAME: &'static str = ".git";
 
 ///
 /// Static variable to get the name of the global configuration file
 ///
-static CONFIGURATION_FILE_NAME: &'static str = ".gpm";
+pub static CONFIGURATION_FILE_NAME: &'static str = ".gpm";
 
 ///
 /// Static variable to get the name of the global configuration file copy
