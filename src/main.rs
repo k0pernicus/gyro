@@ -26,6 +26,24 @@ type IVec = ConfigurationContent;
 /// A type that represents a "list" of git repositories that have to be watched
 type WVec = ConfigurationContent;
 
+fn get_configuration_file_content(configuration_file_path: &Path,
+                                  reset_configuration_file: bool)
+                                  -> ConfigurationContent {
+    match (toml::Parser::parse_from_file(configuration_file_path), reset_configuration_file) {
+        (Some(toml_table), false) => toml_table,
+        (_, true) => {
+            println!("[WARNING] Reseting your default configuration file...");
+            ConfigurationFile::init().toml
+        }
+        (None, _) => {
+            println!("[WARNING] Cannot find the current configuration of the configuration \
+                      file...\n[WARNING] Declaration in {}",
+                     configuration_file_path.to_str().unwrap());
+            ConfigurationFile::init().toml
+        }
+    }
+}
+
 fn main() {
 
     // Command line arguments
@@ -36,23 +54,10 @@ fn main() {
         None => panic!("Home directory canno't be reached"),
     };
     configuration_file_path.push(CONFIGURATION_FILE_NAME);
-    let configuration_file_path_str = configuration_file_path.to_str().unwrap();
     // Get the TOML table, or init a new one
-    let mut toml_table = match (toml::Parser::parse_from_file(configuration_file_path.as_path()),
-                                matches.is_present("reset")) {
-        (Some(toml_table), false) => toml_table,
-        (_, true) => {
-            println!("[WARNING] Reseting your default configuration file...");
-            ConfigurationFile::init().toml
-        }
-        (None, _) => {
-            println!("[WARNING] Cannot find the current configuration of the configuration \
-                      file...\n[WARNING] Declaration in {}",
-                     configuration_file_path_str);
-            ConfigurationFile::init().toml
-        }
-    };
-
+    let mut toml_table: ConfigurationContent =
+        get_configuration_file_content(configuration_file_path.as_path(),
+                                       matches.is_present(commands::RESET_FLAG));
 
     let toml_table_type = toml::Value::Table(toml_table.clone());
 
