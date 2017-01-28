@@ -116,8 +116,12 @@ fn main() {
     // Get statuses
     if matches.is_present(commands::STATUS_SUBCMD) {
         println!("[DEBUG] Got {} command !", commands::STATUS_SUBCMD);
-        let get_only_dirty = ! matches.subcommand_matches(commands::STATUS_SUBCMD).unwrap().is_present(commands::STATUS_SUBCMD_CLEAN_FLAG);
-        let get_only_clean = ! matches.subcommand_matches(commands::STATUS_SUBCMD).unwrap().is_present(commands::STATUS_SUBCMD_DIRTY_FLAG);
+        let get_only_dirty = !matches.subcommand_matches(commands::STATUS_SUBCMD)
+            .unwrap()
+            .is_present(commands::STATUS_SUBCMD_CLEAN_FLAG);
+        let get_only_clean = !matches.subcommand_matches(commands::STATUS_SUBCMD)
+            .unwrap()
+            .is_present(commands::STATUS_SUBCMD_DIRTY_FLAG);
         git::get_statuses_from(&vec_path_watched, get_only_clean, get_only_dirty);
     }
 
