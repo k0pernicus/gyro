@@ -98,6 +98,8 @@ fn main() {
         }
     }
 
+    // If 'diff' is checked, just get the difference between the current local configuration file
+    // and scanned git repositories missed in the file
     if matches.is_present(commands::DIFF_SUBCMD) {
         for gitrepo in &filtered_git_repositories {
             let gitrepo_name = gitrepo.split("/").last().unwrap();
@@ -109,6 +111,7 @@ fn main() {
         }
     }
 
+    // Filter local git repository, and add them
     for gitrepo in &filtered_git_repositories {
         let gitrepo_name = gitrepo.split("/").last().unwrap();
         let gitrepo_name_s = String::from(gitrepo_name);
@@ -117,15 +120,16 @@ fn main() {
                                        &mut Entry::new(gitrepo_name, gitrepo),
                                        &entry_category) {
                 Ok(_) => {
-                    println!("{} has been added to {}",
+                    println!("{} has been added to {:?}",
                              gitrepo_name,
-                             configuration_file_path_str)
+                             configuration_file_path)
                 }
                 Err(error) => println!("{:?}", error),
             }
         }
     }
 
+    // Save part
     let mut encoding_str = ConfigurationFile::init();
     match toml_table.encode(&mut encoding_str) {
         Ok(_) => {
