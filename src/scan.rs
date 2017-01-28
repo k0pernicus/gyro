@@ -1,5 +1,7 @@
 use GIT_DIR_NAME;
 use std::fs;
+use std::io::prelude::*;
+use std::io;
 use std::path::{Path, PathBuf};
 use walkdir::{DirEntry, WalkDir};
 
@@ -63,8 +65,9 @@ impl GitTools for DirEntry {
 /// path for a given git repository.
 ///
 pub fn find_git_repositories(git_path: &mut Vec<String>, directory: &PathBuf) {
-    println!("Scanning repository from {:?} to find git repositories... (this can be long)",
-             directory);
+    print!("Scanning repository from {:?} to find git repositories... (this can take a while) ",
+           directory);
+    io::stdout().flush().ok().expect("Could not flush stdout");
     // Get all entries from the PathBuf given as parameter, filter and follow links
     for entry in WalkDir::new(directory).follow_links(true).into_iter().filter_map(|e| e.ok()) {
         if entry.is_git_repository() {

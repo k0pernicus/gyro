@@ -4,7 +4,7 @@ use libgpm::{IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
 // Program relative
 
 /// Name of the program
-static PRG_NAME: &'static str = "gpm";
+pub static PRG_NAME: &'static str = "gpm";
 
 // Flags
 
@@ -14,14 +14,17 @@ static RESET_FLAG_SHORT: &'static str = "r";
 
 // Subcommands
 
-/// Diff subcommand
-pub static DIFF_SUBCMD: &'static str = "diff";
+/// Scan subcommand
+pub static SCAN_SUBCMD: &'static str = "scan";
+pub static SCAN_SUBCMD_DIFF_FLAG: &'static str = "diff";
+pub static SCAN_SUBCMD_SAVE_FLAG: &'static str = "save";
+
+/// Status subcommand
+pub static STATUS_SUBCMD: &'static str = "status";
 
 /// Store subcommand
-pub static STORE_SUBCMD: &'static str = "store";
-
-pub static STORE_SUBCMD_DEFAULT_FLAG: &'static str = "default";
-static STORE_SUBCMD_DEFAULT_FLAG_SHORT: &'static str = "d";
+pub static OVERRIDE_SUBCMD: &'static str = "override";
+pub static OVERRIDE_SUBCMD_CATEGORY_FLAG: &'static str = "category";
 
 /// Function to get arguments of the program.
 /// This function returns an ArgMatches type.
@@ -34,19 +37,22 @@ pub fn get_program_args<'a>() -> ArgMatches<'a> {
             .short(RESET_FLAG_SHORT)
             .long(RESET_FLAG)
             .help("Reset the entire configuration file to the default values"))
-        .subcommand(SubCommand::with_name(DIFF_SUBCMD)
+        .subcommand(SubCommand::with_name(OVERRIDE_SUBCMD)
             .author("A. Carette <antonin@carette.xyz>")
-            .about("Get the difference between current state and new local git repositories \
-                    unfollowed"))
-        .subcommand(SubCommand::with_name(STORE_SUBCMD)
-            .author("A. Carette <antonin@carette.xyz>")
-            .about("Manage storing behaviours, for new git repositories")
-            .arg(Arg::with_name(STORE_SUBCMD_DEFAULT_FLAG)
-                .short(STORE_SUBCMD_DEFAULT_FLAG_SHORT)
-                .long(STORE_SUBCMD_DEFAULT_FLAG)
-                .help("Default 'location' of new git repositories")
+            .about("Override default settings from your configuration file")
+            .arg(Arg::with_name(OVERRIDE_SUBCMD_CATEGORY_FLAG)
+                .help("Override the default location of new git repositories")
                 .takes_value(true)
-                .possible_values(&[IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME])
-                .default_value(WATCHED_ENTRY_NAME)))
+                .possible_values(&[IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME])))
+        .subcommand(SubCommand::with_name(SCAN_SUBCMD)
+            .author("A. Carette <antonin@carette.xyz>")
+            .about("Scan your hard disk to find git repositories")
+            .arg(Arg::with_name(SCAN_SUBCMD_DIFF_FLAG)
+                .help("Print new git repositories from your hard disk"))
+            .arg(Arg::with_name(SCAN_SUBCMD_SAVE_FLAG)
+                .help("Save new git repositories into your configuration file")))
+        .subcommand(SubCommand::with_name(STATUS_SUBCMD)
+            .author("A. Carette <antonin@carette.xyz>")
+            .about("Get the status of watched git repositories"))
         .get_matches()
 }

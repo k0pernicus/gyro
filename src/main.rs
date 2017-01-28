@@ -10,7 +10,7 @@ use libgpm::{ConfigurationContent, ConfigurationFile, CONFIGURATION_FILE_NAME, B
              GROUPS_ENTRY_NAME, IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
 use libgpm::configuration::{ConfigureContent, Entry, EntryCategory};
 use libgpm::file::{TomlExtension, ConfigurationFileExtension};
-use libgpm::git::Repo;
+use libgpm::git;
 use libgpm::scan::{find_git_repositories, filter_hidden_repositories};
 use rustc_serialize::Encodable;
 use std::collections::BTreeMap;
@@ -48,6 +48,17 @@ fn main() {
 
     // Command line arguments
     let matches = commands::get_program_args();
+
+    if (!matches.is_present(commands::RESET_FLAG) && !matches.is_present(commands::SCAN_SUBCMD) &&
+        !matches.is_present(commands::STATUS_SUBCMD) &&
+        !matches.is_present(commands::OVERRIDE_SUBCMD)) {
+        println!("{}", matches.usage());
+        println!("\nYou can learn more about {} using {} --help !",
+                 commands::PRG_NAME,
+                 commands::PRG_NAME);
+        exit(0);
+    }
+
     // Get the user home directory, and push the name of the gpm configuration file
     let mut configuration_file_path = match env::home_dir() {
         Some(home_dir) => PathBuf::from(home_dir),
@@ -66,78 +77,106 @@ fn main() {
             .unwrap()
             .as_str()
             .unwrap();
-    if matches.is_present(commands::STORE_SUBCMD) {
-        default_category_storage = matches.subcommand_matches(commands::STORE_SUBCMD)
+    if matches.is_present(commands::OVERRIDE_SUBCMD) {
+        println!("[DEBUG] Got {} command !", commands::OVERRIDE_SUBCMD);
+        default_category_storage = matches.subcommand_matches(commands::OVERRIDE_SUBCMD)
             .unwrap()
-            .value_of(commands::STORE_SUBCMD_DEFAULT_FLAG)
+            .value_of(commands::OVERRIDE_SUBCMD_CATEGORY_FLAG)
             .unwrap();
     }
 
-    // Compiler error when using pattern matching - TODO
-    let entry_category = if default_category_storage == WATCHED_ENTRY_NAME {
-        EntryCategory::Watched
-    } else {
-        EntryCategory::Ignored
-    };
-
-    // Get local git path directories
-    let mut gitpath_directories: Vec<String> = Vec::new();
-    find_git_repositories(&mut gitpath_directories, &env::home_dir().unwrap());
-    // Get git repositories that are not in an hidden path
-    let filtered_git_repositories = filter_hidden_repositories(&gitpath_directories);
     // Declare && initialize repositories vectors
     let mut vec_watched = Vec::new();
     let mut vec_ignored = Vec::new();
     // Store watched and ignored git path repositories, from the configuration file
     for (key, value) in toml_table.iter() {
-        if key.starts_with(WATCHED_ENTRY_NAME) && (key != WATCHED_ENTRY_NAME) {
-            vec_watched.push(key.clone());
+        let category_separator_index = key.find('.');
+        if category_separator_index.is_none() {
+            continue;
         }
-        if key.starts_with(IGNORED_ENTRY_NAME) && (key != IGNORED_ENTRY_NAME) {
-            vec_ignored.push(key.clone());
+        unsafe {
+            let based_key = key.slice_unchecked(category_separator_index.unwrap() + 1, key.len())
+                .to_owned();
+            if key.starts_with(WATCHED_ENTRY_NAME) && (key != WATCHED_ENTRY_NAME) {
+                vec_watched.push(based_key);
+            } else {
+                if key.starts_with(IGNORED_ENTRY_NAME) && (key != IGNORED_ENTRY_NAME) {
+                    vec_ignored.push(based_key);
+                }
+            }
         }
     }
 
-    // If 'diff' is checked, just get the difference between the current local configuration file
-    // and scanned git repositories missed in the file
-    if matches.is_present(commands::DIFF_SUBCMD) {
+    // Get statuses
+    if matches.is_present(commands::STATUS_SUBCMD) {
+        println!("[DEBUG] Got {} command !", commands::STATUS_SUBCMD);
+        git::get_statuses_from(&vec_watched);
+    }
+
+    if matches.is_present(commands::SCAN_SUBCMD) {
+        println!("[DEBUG] Got {} command !", commands::SCAN_SUBCMD);
+        // Get local git path directories
+        let mut gitpath_directories: Vec<String> = Vec::new();
+        find_git_repositories(&mut gitpath_directories, &env::home_dir().unwrap());
+        // Get git repositories that are not in an hidden path
+        let filtered_git_repositories = filter_hidden_repositories(&gitpath_directories);
+
+        // Compiler error when using pattern matching - TODO
+        let entry_category = if default_category_storage == WATCHED_ENTRY_NAME {
+            EntryCategory::Watched
+        } else {
+            EntryCategory::Ignored
+        };
+
+        // Filter local git repository, and add them
         for gitrepo in &filtered_git_repositories {
             let gitrepo_name = gitrepo.split("/").last().unwrap();
             let gitrepo_name_s = String::from(gitrepo_name);
             if !(vec_watched.contains(&gitrepo_name_s) || vec_ignored.contains(&gitrepo_name_s)) {
-                println!("New repository to save: {}", gitrepo);
+                if !matches.subcommand_matches(commands::SCAN_SUBCMD)
+                    .unwrap()
+                    .is_present(commands::SCAN_SUBCMD_DIFF_FLAG) {
+                    match toml_table.add_entry(gitrepo_name,
+                                               &mut Entry::new(gitrepo_name, gitrepo),
+                                               &entry_category) {
+                        Ok(_) => {
+                            match entry_category {
+                                EntryCategory::Watched => vec_watched.push(gitrepo_name_s),
+                                EntryCategory::Ignored => vec_ignored.push(gitrepo_name_s),
+                                EntryCategory::Groups => (),
+                            }
+                            println!("{} has been added to {:?}",
+                                     gitrepo_name,
+                                     configuration_file_path);
+                        }
+                        Err(error) => println!("[ERROR] {:?}", error),
+                    }
+                } else {
+                    println!("[DEBUG] Got {} flag !", commands::SCAN_SUBCMD_DIFF_FLAG);
+                    println!("Found new repository: {} (in {})", gitrepo_name_s, gitrepo);
+                }
             }
-            exit(0);
         }
-    }
 
-    // Filter local git repository, and add them
-    for gitrepo in &filtered_git_repositories {
-        let gitrepo_name = gitrepo.split("/").last().unwrap();
-        let gitrepo_name_s = String::from(gitrepo_name);
-        if !(vec_watched.contains(&gitrepo_name_s) || vec_ignored.contains(&gitrepo_name_s)) {
-            match toml_table.add_entry(gitrepo_name,
-                                       &mut Entry::new(gitrepo_name, gitrepo),
-                                       &entry_category) {
+        // Save part
+        if matches.subcommand_matches(commands::SCAN_SUBCMD)
+            .unwrap()
+            .is_present(commands::SCAN_SUBCMD_SAVE_FLAG) {
+            println!("[DEBUG] Got {} flag !", commands::SCAN_SUBCMD_SAVE_FLAG);
+            let mut encoding_str = ConfigurationFile::init();
+            match toml_table.encode(&mut encoding_str) {
                 Ok(_) => {
-                    println!("{} has been added to {:?}",
-                             gitrepo_name,
-                             configuration_file_path)
+                    match encoding_str.save(Path::new(configuration_file_path.as_path())) { 
+                        Ok(_) => {
+                            println!("The configuration file has been saved in {:?}!",
+                                     configuration_file_path)
+                        }
+                        Err(error) => println!("{}", error),
+                    }
                 }
                 Err(error) => println!("{:?}", error),
             }
         }
     }
 
-    // Save part
-    let mut encoding_str = ConfigurationFile::init();
-    match toml_table.encode(&mut encoding_str) {
-        Ok(_) => {
-            match encoding_str.save(Path::new(configuration_file_path.as_path())) { 
-                Ok(_) => println!("It works!"),
-                Err(error) => println!("{}", error),
-            }
-        }
-        Err(error) => println!("{:?}", error),
-    }
 }
