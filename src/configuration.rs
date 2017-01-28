@@ -1,13 +1,12 @@
 use {ConfigurationContent, ConfigurationFile, GROUPS_ENTRY_NAME, IGNORED_ENTRY_NAME,
      WATCHED_ENTRY_NAME};
 use chrono::offset::utc::UTC;
-use rustc_serialize::{Decodable, Encodable};
-use std::cmp::PartialEq;
+use rustc_serialize::Encodable;
 use std::error::Error;
 use std::fmt;
 use std::result;
 use toml;
-use toml::{Decoder, Value};
+use toml::Value;
 
 ///
 /// An entry is corresponding to a git repository stored in the configuration file:

@@ -7,7 +7,7 @@ extern crate toml;
 pub mod commands;
 
 use libgpm::{ConfigurationContent, ConfigurationFile, CONFIGURATION_FILE_NAME, BODY_ENTRY_NAME,
-             GROUPS_ENTRY_NAME, IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
+             IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
 use libgpm::configuration::{ConfigureContent, Entry, EntryCategory};
 use libgpm::file::{TomlExtension, ConfigurationFileExtension};
 use libgpm::git;
@@ -17,14 +17,6 @@ use std::collections::BTreeMap;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process::exit;
-
-/// A type that represents a binary tree map of groups - each group represents a couple (String
-/// type, Vector of String types)
-type GVec = BTreeMap<String, Vec<String>>;
-/// A type that represents a "list" of git repositories that have to be ignored
-type IVec = ConfigurationContent;
-/// A type that represents a "list" of git repositories that have to be watched
-type WVec = ConfigurationContent;
 
 fn get_configuration_file_content(configuration_file_path: &Path,
                                   reset_configuration_file: bool)
@@ -49,9 +41,9 @@ fn main() {
     // Command line arguments
     let matches = commands::get_program_args();
 
-    if (!matches.is_present(commands::RESET_FLAG) && !matches.is_present(commands::SCAN_SUBCMD) &&
-        !matches.is_present(commands::STATUS_SUBCMD) &&
-        !matches.is_present(commands::OVERRIDE_SUBCMD)) {
+    if !matches.is_present(commands::RESET_FLAG) && !matches.is_present(commands::SCAN_SUBCMD) &&
+       !matches.is_present(commands::STATUS_SUBCMD) &&
+       !matches.is_present(commands::OVERRIDE_SUBCMD) {
         println!("{}", matches.usage());
         println!("\nYou can learn more about {} using {} --help !",
                  commands::PRG_NAME,

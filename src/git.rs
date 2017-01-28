@@ -1,8 +1,5 @@
-use ConfigurationContent;
 use ansi_term::Style;
-use git2::{BranchType, Repository};
-use std::fmt;
-use std::path::Path;
+use git2::Repository;
 
 pub struct Repo(pub Repository);
 
