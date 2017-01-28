@@ -63,6 +63,8 @@ impl GitTools for DirEntry {
 /// path for a given git repository.
 ///
 pub fn find_git_repositories(git_path: &mut Vec<String>, directory: &PathBuf) {
+    println!("Scanning repository from {:?} to find git repositories... (this can be long)",
+             directory);
     // Get all entries from the PathBuf given as parameter, filter and follow links
     for entry in WalkDir::new(directory).follow_links(true).into_iter().filter_map(|e| e.ok()) {
         if entry.is_git_repository() {
@@ -72,6 +74,7 @@ pub fn find_git_repositories(git_path: &mut Vec<String>, directory: &PathBuf) {
             git_path.push(entry_p.to_str().unwrap().to_string());
         }
     }
+    println!("Ok!");
 }
 
 ///
