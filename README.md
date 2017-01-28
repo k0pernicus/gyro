@@ -14,6 +14,28 @@ With gpm-rs, you can keep an eye on your local git repositories, get easily some
 * `gpm status` to get the status of those repositories ;
 * `gpm help` to take a look at the documentation.
 
+### Commands
+
+```
+gpm 0.1.0
+A. Carette <antonin@carette.xyz>
+Your Git Project Manager
+
+USAGE:
+    gpm [FLAGS] [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -r, --reset      Reset the entire configuration file to the default values
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    help        Prints this message or the help of the given subcommand(s)
+    override    Override default settings from your configuration file
+    scan        Scan your hard disk to find git repositories
+    status      Get the status of watched git repositories
+```
+
 ## License
 
 MIT
