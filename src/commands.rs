@@ -14,6 +14,10 @@ static RESET_FLAG_SHORT: &'static str = "r";
 
 // Subcommands
 
+///  Override subcommand
+pub static OVERRIDE_SUBCMD: &'static str = "override";
+pub static OVERRIDE_SUBCMD_CATEGORY_FLAG: &'static str = "category";
+
 /// Scan subcommand
 pub static SCAN_SUBCMD: &'static str = "scan";
 pub static SCAN_SUBCMD_DIFF_FLAG: &'static str = "diff";
@@ -23,10 +27,6 @@ pub static SCAN_SUBCMD_SAVE_FLAG: &'static str = "save";
 pub static STATUS_SUBCMD: &'static str = "status";
 pub static STATUS_SUBCMD_CLEAN_FLAG: &'static str = "clean";
 pub static STATUS_SUBCMD_DIRTY_FLAG: &'static str = "dirty";
-
-/// Store subcommand
-pub static OVERRIDE_SUBCMD: &'static str = "override";
-pub static OVERRIDE_SUBCMD_CATEGORY_FLAG: &'static str = "category";
 
 /// Function to get arguments of the program.
 /// This function returns an ArgMatches type.
