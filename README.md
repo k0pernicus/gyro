@@ -19,14 +19,14 @@ With gpm-rs, you can keep an eye on your local git repositories, get easily some
 ```
 gpm 0.1.0
 A. Carette <antonin@carette.xyz>
-Your Git Project Manager
+Your Git Project Monitor
 
 USAGE:
     gpm [FLAGS] [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information
-    -r, --reset      Reset the entire configuration file to the default values
+    -r, --reset      Reset the configuration file
     -V, --version    Prints version information
 
 SUBCOMMANDS:
