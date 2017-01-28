@@ -21,6 +21,8 @@ pub static SCAN_SUBCMD_SAVE_FLAG: &'static str = "save";
 
 /// Status subcommand
 pub static STATUS_SUBCMD: &'static str = "status";
+pub static STATUS_SUBCMD_CLEAN_FLAG: &'static str = "clean";
+pub static STATUS_SUBCMD_DIRTY_FLAG: &'static str = "dirty";
 
 /// Store subcommand
 pub static OVERRIDE_SUBCMD: &'static str = "override";
@@ -57,6 +59,13 @@ pub fn get_program_args<'a>() -> ArgMatches<'a> {
                 .long(SCAN_SUBCMD_SAVE_FLAG)))
         .subcommand(SubCommand::with_name(STATUS_SUBCMD)
             .author("A. Carette <antonin@carette.xyz>")
-            .about("Get the status of watched git repositories"))
+            .about("Get the status of watched git repositories")
+            .arg(Arg::with_name(STATUS_SUBCMD_CLEAN_FLAG)
+                .help("Get only clean projects")
+                .long(STATUS_SUBCMD_CLEAN_FLAG)
+                .conflicts_with(STATUS_SUBCMD_DIRTY_FLAG))
+            .arg(Arg::with_name(STATUS_SUBCMD_DIRTY_FLAG)
+                .help("Get only dirty projects")
+                .long(STATUS_SUBCMD_DIRTY_FLAG)))
         .get_matches()
 }
