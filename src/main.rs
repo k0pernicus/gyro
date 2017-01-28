@@ -87,21 +87,27 @@ fn main() {
 
     // Declare && initialize repositories vectors
     let mut vec_watched = Vec::new();
+    let mut vec_path_watched = Vec::new();
     let mut vec_ignored = Vec::new();
+    let mut vec_path_ignored = Vec::new();
     // Store watched and ignored git path repositories, from the configuration file
     for (key, value) in toml_table.iter() {
         let category_separator_index = key.find('.');
         if category_separator_index.is_none() {
             continue;
         }
+        let key_path: String =
+            value.as_table().unwrap().get("path").unwrap().as_str().unwrap().to_owned();
         unsafe {
             let based_key = key.slice_unchecked(category_separator_index.unwrap() + 1, key.len())
                 .to_owned();
             if key.starts_with(WATCHED_ENTRY_NAME) && (key != WATCHED_ENTRY_NAME) {
                 vec_watched.push(based_key);
+                vec_path_watched.push(key_path);
             } else {
                 if key.starts_with(IGNORED_ENTRY_NAME) && (key != IGNORED_ENTRY_NAME) {
                     vec_ignored.push(based_key);
+                    vec_path_ignored.push(key_path);
                 }
             }
         }
@@ -110,7 +116,7 @@ fn main() {
     // Get statuses
     if matches.is_present(commands::STATUS_SUBCMD) {
         println!("[DEBUG] Got {} command !", commands::STATUS_SUBCMD);
-        git::get_statuses_from(&vec_watched);
+        git::get_statuses_from(&vec_path_watched);
     }
 
     if matches.is_present(commands::SCAN_SUBCMD) {
@@ -133,9 +139,9 @@ fn main() {
             let gitrepo_name = gitrepo.split("/").last().unwrap();
             let gitrepo_name_s = String::from(gitrepo_name);
             if !(vec_watched.contains(&gitrepo_name_s) || vec_ignored.contains(&gitrepo_name_s)) {
-                if !matches.subcommand_matches(commands::SCAN_SUBCMD)
+                if !(matches.subcommand_matches(commands::SCAN_SUBCMD)
                     .unwrap()
-                    .is_present(commands::SCAN_SUBCMD_DIFF_FLAG) {
+                    .is_present(commands::SCAN_SUBCMD_DIFF_FLAG)) {
                     match toml_table.add_entry(gitrepo_name,
                                                &mut Entry::new(gitrepo_name, gitrepo),
                                                &entry_category) {
