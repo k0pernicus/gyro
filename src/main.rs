@@ -1,8 +1,12 @@
-extern crate git2;
+#[macro_use]
+extern crate clap;
 extern crate libgpm;
 extern crate rustc_serialize;
 extern crate toml;
 
+pub mod commands;
+
+use clap::{Arg, App, SubCommand};
 use libgpm::{ConfigurationContent, ConfigurationFile, CONFIGURATION_FILE_NAME, GROUPS_ENTRY_NAME,
              IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
 use libgpm::configuration::{ConfigureContent, Entry, EntryCategory};
@@ -13,6 +17,7 @@ use rustc_serialize::Encodable;
 use std::collections::BTreeMap;
 use std::env;
 use std::path::{Path, PathBuf};
+use std::process::exit;
 
 /// A type that represents a binary tree map of groups - each group represents a couple (String
 /// type, Vector of String types)
@@ -22,28 +27,33 @@ type IVec = ConfigurationContent;
 /// A type that represents a "list" of git repositories that have to be watched
 type WVec = ConfigurationContent;
 
-fn test() {
-    let toml_table = toml::Parser::parse_from_file(Path::new("/home/antonin/.gpm")).unwrap();
-    // TODO: Create two vectors: a watched vector (typed WVec), an ignored vector (type IVec), a group vector (type GVec) - that contains Entry objects (excepts the last one)
-    // TODO: Fill those vectors with (key, value) from the TOML table variable
-    // TODO: Display them!
-    let mut vec_watched: Vec<String> = Vec::new();
-    let mut vec_ignored: Vec<String> = Vec::new();
-    for (key, value) in toml_table.iter() {
-        if key.starts_with(WATCHED_ENTRY_NAME) {
-            println!("{} -> {}", key, value);
-            vec_watched.push(key.clone());
-        }
-        if key.starts_with(IGNORED_ENTRY_NAME) {
-            println!("{} -> {}", key, value);
-            vec_ignored.push(key.clone());
-        }
-    }
-    let test = toml_table.get("watched.Test").unwrap().as_table().unwrap();
-    println!("{}", test.get("name").unwrap());
-}
-
 fn main() {
+
+    // Command line arguments
+    let matches = App::new(commands::PRG_NAME)
+        .version(crate_version!())
+        .author("A. Carette <antonin@carette.xyz>")
+        .about("Your Git Project Manager")
+        .arg(Arg::with_name(commands::RESET_FLAG)
+            .short("r")
+            .long("reset")
+            .help("Reset the entire configuration file to the default values"))
+        .subcommand(SubCommand::with_name(commands::DIFF_SUBCMD)
+            .author("A. Carette <antonin@carette.xyz>")
+            .about("Get the difference between current state and new local git repositories \
+                    unfollowed"))
+        .subcommand(SubCommand::with_name(commands::STORE_SUBCMD)
+            .author("A. Carette <antonin@carette.xyz>")
+            .about("Manage storing behaviours, for new git repositories")
+            .arg(Arg::with_name(commands::STORE_SUBCMD_DEFAULT_FLAG)
+                .short("d")
+                .long("default")
+                .help("Default 'location' of new git repositories")
+                .takes_value(true)
+                .possible_values(&[IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME])
+                .default_value(WATCHED_ENTRY_NAME)))
+        .get_matches();
+
     // Get the user home directory, and push the name of the gpm configuration file
     let mut configuration_file_path = match env::home_dir() {
         Some(home_dir) => PathBuf::from(home_dir),
@@ -52,9 +62,14 @@ fn main() {
     configuration_file_path.push(CONFIGURATION_FILE_NAME);
     let configuration_file_path_str = configuration_file_path.to_str().unwrap();
     // Get the TOML table, or init a new one
-    let mut toml_table = match toml::Parser::parse_from_file(configuration_file_path.as_path()) {
-        Some(toml_table) => toml_table,
-        None => {
+    let mut toml_table = match (toml::Parser::parse_from_file(configuration_file_path.as_path()),
+                                matches.is_present("reset")) {
+        (Some(toml_table), false) => toml_table,
+        (_, true) => {
+            println!("[WARNING] Reseting your default configuration file...");
+            ConfigurationFile::init().toml
+        }
+        (None, _) => {
             println!("[WARNING] Cannot find the current configuration of the configuration \
                       file...\n[WARNING] Declaration in {}",
                      configuration_file_path_str);
@@ -78,13 +93,32 @@ fn main() {
             vec_ignored.push(key.clone());
         }
     }
+
+    if matches.is_present("diff") {
+        for gitrepo in &filtered_git_repositories {
+            let gitrepo_name = gitrepo.split("/").last().unwrap();
+            let gitrepo_name_s = String::from(gitrepo_name);
+            if !(vec_watched.contains(&gitrepo_name_s) || vec_ignored.contains(&gitrepo_name_s)) {
+                println!("New repository to save: {}", gitrepo);
+            }
+            exit(0);
+        }
+    }
+
+    let entry_category =
+        if matches.subcommand_matches("store").unwrap().value_of("default").unwrap() ==
+           WATCHED_ENTRY_NAME {
+            EntryCategory::Watched
+        } else {
+            EntryCategory::Ignored
+        };
     for gitrepo in &filtered_git_repositories {
         let gitrepo_name = gitrepo.split("/").last().unwrap();
         let gitrepo_name_s = String::from(gitrepo_name);
         if !(vec_watched.contains(&gitrepo_name_s) || vec_ignored.contains(&gitrepo_name_s)) {
             match toml_table.add_entry(gitrepo_name,
                                        &mut Entry::new(gitrepo_name, gitrepo),
-                                       &EntryCategory::Watched) {
+                                       &entry_category) {
                 Ok(_) => {
                     println!("{} has been added to {}",
                              gitrepo_name,
