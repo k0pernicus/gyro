@@ -12,9 +12,10 @@ name = "gpm"
 path = "src/main.rs"
 
 [dependencies]
-		ansi_term = "0.9"
-		chrono = { version = "0.2", features = ["serde", "rustc-serialize"] }
-		git2 = "0.6"
-		rustc-serialize = "0.3.22"
-		toml = "0.2"
-    walkdir = "1"
+ansi_term = "0.9"
+clap = "2.20.0"
+chrono = { version = "0.2", features = ["serde", "rustc-serialize"] }
+git2 = "0.6"
+rustc-serialize = "0.3.22"
+toml = "0.2"
+walkdir = "1"
