@@ -28,6 +28,11 @@ pub static CONFIGURATION_FILE_NAME: &'static str = ".gpm";
 static CONFIGURATION_FILE_NAME_BUP: &'static str = ".gpm.new";
 
 ///
+/// Static variable to get the entry name of the configuration part
+///
+pub static BODY_ENTRY_NAME: &'static str = "config";
+
+///
 /// Static variable to get the entry name of watched git repositories
 ///
 pub static WATCHED_ENTRY_NAME: &'static str = "watched";

@@ -3,8 +3,8 @@ use std::io::{Error, Read, Write};
 use std::path::Path;
 use toml::{encode_str, Parser, Value};
 
-use {ConfigurationContent, ConfigurationFile, WATCHED_ENTRY_NAME, IGNORED_ENTRY_NAME,
-     GROUPS_ENTRY_NAME};
+use {ConfigurationContent, ConfigurationFile, BODY_ENTRY_NAME, WATCHED_ENTRY_NAME,
+     IGNORED_ENTRY_NAME, GROUPS_ENTRY_NAME};
 
 pub trait ConfigurationFileExtension {
     ///
@@ -26,15 +26,23 @@ impl<'a> ConfigurationFileExtension for ConfigurationFile {
         let mut encoder = ConfigurationFile::new();
         let toml_content = format!(r#"
             [{}]
+            store = "{}"
+
+            [{}]
             
             [{}]
 
             [{}]
             "#,
+                                   BODY_ENTRY_NAME,
+                                   WATCHED_ENTRY_NAME,
                                    WATCHED_ENTRY_NAME,
                                    IGNORED_ENTRY_NAME,
                                    GROUPS_ENTRY_NAME);
-        encoder.toml = Parser::new(&toml_content).parse().unwrap();
+        encoder.toml = match Parser::new(&toml_content).parse() {
+            Some(encoder) => encoder,
+            None => panic!("[ERROR] Cannot parse the previous content"),
+        };
         encoder
     }
 
