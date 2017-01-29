@@ -3,6 +3,19 @@ use git2::Repository;
 
 pub struct Repo(pub Repository);
 
+///
+/// Label for a repository that indicates that the repository is clean.
+///
+static CLEAN_LABEL: &'static str = "CLEAN";
+
+///
+/// Label for a repository that indicates that the repository is dirty.
+///
+static DIRTY_LABEL: &'static str = "DIRTY";
+
+///
+/// Function to get some informations about git repositories indicated by their path.
+///
 pub fn get_statuses_from(vector_of_repositories: &Vec<String>,
                          get_only_clean: bool,
                          get_only_dirty: bool) {
@@ -20,6 +33,10 @@ pub fn get_statuses_from(vector_of_repositories: &Vec<String>,
 }
 
 impl Repo {
+    ///
+    /// Function to know if a given Repo object is clean or not.
+    /// A clean repository is a repository that does not have any difference with the last git index.
+    ///
     pub fn is_clean(&self) -> bool {
         let &Repo(ref repository) = self;
         let current_git_index = repository.index();
@@ -35,6 +52,10 @@ impl Repo {
         }
     }
 
+    ///
+    /// Function to return a label, corresponding to the 'clean status' of the repository.
+    /// A label indicates if a repository is clean or not.
+    ///
     pub fn get_label(&self) -> String {
         if self.is_clean() {
             return String::from("CLEAN");
@@ -42,6 +63,9 @@ impl Repo {
         String::from("DIRTY")
     }
 
+    ///
+    /// Function to print some informations about the current git repository.
+    ///
     pub fn get_status(&self) {
         let &Repo(ref repository) = self;
         let mut to_display = String::new();
