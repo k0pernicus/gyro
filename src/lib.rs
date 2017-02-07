@@ -20,12 +20,12 @@ pub static GIT_DIR_NAME: &'static str = ".git";
 ///
 /// Static variable to get the name of the global configuration file
 ///
-pub static CONFIGURATION_FILE_NAME: &'static str = ".gpm";
+pub static CONFIGURATION_FILE_NAME: &'static str = ".gyro";
 
 ///
 /// Static variable to get the name of the global configuration file copy
 ///
-static CONFIGURATION_FILE_NAME_BUP: &'static str = ".gpm.new";
+static CONFIGURATION_FILE_NAME_BUP: &'static str = ".gyro.new";
 
 ///
 /// Static variable to get the entry name of the configuration part

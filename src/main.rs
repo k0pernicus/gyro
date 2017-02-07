@@ -1,19 +1,18 @@
 #[macro_use]
 extern crate clap;
-extern crate libgpm;
+extern crate libgyro;
 extern crate rustc_serialize;
 extern crate toml;
 
 pub mod commands;
 
-use libgpm::{ConfigurationContent, ConfigurationFile, CONFIGURATION_FILE_NAME, BODY_ENTRY_NAME,
-             IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
-use libgpm::configuration::{ConfigureContent, Entry, EntryCategory};
-use libgpm::file::{TomlExtension, ConfigurationFileExtension};
-use libgpm::git;
-use libgpm::scan::{find_git_repositories, filter_hidden_repositories};
+use libgyro::{ConfigurationContent, ConfigurationFile, CONFIGURATION_FILE_NAME, BODY_ENTRY_NAME,
+              IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
+use libgyro::configuration::{ConfigureContent, Entry, EntryCategory};
+use libgyro::file::{TomlExtension, ConfigurationFileExtension};
+use libgyro::git;
+use libgyro::scan::{find_git_repositories, filter_hidden_repositories};
 use rustc_serialize::Encodable;
-use std::collections::BTreeMap;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process::exit;
@@ -51,7 +50,7 @@ fn main() {
         exit(0);
     }
 
-    // Get the user home directory, and push the name of the gpm configuration file
+    // Get the user home directory, and push the name of the gyro configuration file
     let mut configuration_file_path = match env::home_dir() {
         Some(home_dir) => PathBuf::from(home_dir),
         None => panic!("Home directory canno't be reached"),

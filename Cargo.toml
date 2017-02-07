@@ -1,14 +1,14 @@
 [package]
-name = "gpm"
+name = "gyro"
 version = "0.1.0"
 authors = ["k0pernicus <antonin.carette@gmail.com>"]
 
 [lib]
-name = "libgpm"
+name = "libgyro"
 path = "src/lib.rs"
 
 [[bin]]
-name = "gpm"
+name = "gyro"
 path = "src/main.rs"
 
 [dependencies]

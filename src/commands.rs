@@ -1,10 +1,10 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
-use libgpm::{IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
+use libgyro::{IGNORED_ENTRY_NAME, WATCHED_ENTRY_NAME};
 
 // Program relative
 
 /// Name of the program
-pub static PRG_NAME: &'static str = "gpm";
+pub static PRG_NAME: &'static str = "gyro";
 
 // Flags
 
