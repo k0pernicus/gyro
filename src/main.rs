@@ -42,7 +42,8 @@ fn main() {
 
     if !matches.is_present(commands::RESET_FLAG) && !matches.is_present(commands::SCAN_SUBCMD) &&
        !matches.is_present(commands::STATUS_SUBCMD) &&
-       !matches.is_present(commands::OVERRIDE_SUBCMD) {
+       !matches.is_present(commands::OVERRIDE_SUBCMD) &&
+       !matches.is_present(commands::REPO_SUBCMD) {
         println!("{}", matches.usage());
         println!("\nYou can learn more about {} using {} --help !",
                  commands::PRG_NAME,
