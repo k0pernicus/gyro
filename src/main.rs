@@ -105,6 +105,41 @@ fn main() {
         }
     }
 
+    // TODO
+    if let Some(ref matches) = matches.subcommand_matches(commands::REPO_SUBCMD) {
+        println!("[DEBUG] Got {} command !", commands::REPO_SUBCMD);
+        let repository_name = matches.value_of(commands::REPO_SUBCMD_NAME_FLAG).unwrap().to_owned();
+        if !vec_watched.contains(&repository_name) && !vec_ignored.contains(&repository_name) {
+            println!("[WARNING] Git local repository {} not found! Have you scanned recently \
+                      your hard drive ?",
+                     repository_name);
+            exit(1);
+        }
+        let mut old_category = EntryCategory::Watched;
+        let mut new_category = EntryCategory::Ignored;
+        if vec_watched.contains(&repository_name) {
+            println!("The git local repository {} is in {}!",
+                     repository_name,
+                     WATCHED_ENTRY_NAME);
+        } else {
+            println!("The git local repository {} is in {}!",
+                     repository_name,
+                     IGNORED_ENTRY_NAME);
+            old_category = EntryCategory::Ignored;
+            new_category = EntryCategory::Watched;
+        }
+        if matches.is_present(commands::REPO_SUBCMD_MOVE_FLAG) {
+            match toml_table.transfer_entry(&repository_name, &old_category, &new_category) {
+                Ok(()) => println!("[DEBUG] The local git repository '{}' has been transfered from `{:?}` to `{:?}`!", repository_name, old_category, new_category),
+                Err(error) => {
+                    println!("[DEBUG] Error transfering the local git repository '{}': {}",
+                             repository_name,
+                             error)
+                }
+            }
+        }
+    }
+
     // Get statuses
     if matches.is_present(commands::STATUS_SUBCMD) {
         println!("[DEBUG] Got {} command !", commands::STATUS_SUBCMD);
@@ -162,24 +197,23 @@ fn main() {
             }
         }
 
-        // Save part
-        if matches.subcommand_matches(commands::SCAN_SUBCMD)
-            .unwrap()
-            .is_present(commands::SCAN_SUBCMD_SAVE_FLAG) {
-            println!("[DEBUG] Got {} flag !", commands::SCAN_SUBCMD_SAVE_FLAG);
-            let mut encoding_str = ConfigurationFile::init();
-            match toml_table.encode(&mut encoding_str) {
-                Ok(_) => {
-                    match encoding_str.save(Path::new(configuration_file_path.as_path())) { 
-                        Ok(_) => {
-                            println!("The configuration file has been saved in {:?}!",
-                                     configuration_file_path)
-                        }
-                        Err(error) => println!("{}", error),
+    }
+
+    // Save part
+    if matches.is_present(commands::SAVE_FLAG) {
+        println!("[DEBUG] Got {} flag !", commands::SAVE_FLAG);
+        let mut encoding_str = ConfigurationFile::init();
+        match toml_table.encode(&mut encoding_str) {
+            Ok(_) => {
+                match encoding_str.save(Path::new(configuration_file_path.as_path())) { 
+                    Ok(_) => {
+                        println!("The configuration file has been saved in {:?}!",
+                                 configuration_file_path)
                     }
+                    Err(error) => println!("{}", error),
                 }
-                Err(error) => println!("{:?}", error),
             }
+            Err(error) => println!("{:?}", error),
         }
     }
 
